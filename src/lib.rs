@@ -16,13 +16,17 @@ pub fn todays_line() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
+    use chrono::Utc;
 
     #[test]
-    fn summary_line() {
-        let dt: DateTime<Local> = Local.timestamp(1, 0);
-        println!("{}", mdbook_summary_line_for_time(dt));
-        println!("Today's line: {}", todays_line());
+    fn test_summary_line_format() {
+        let dt: DateTime<Utc> = Utc.timestamp(1, 0);
+        let formatted = mdbook_summary_line_for_time(dt);
+        assert_eq!(formatted, "- [Thursday, Jan 01, 1970](./1970/1970-01/1970-01-01.md)");
+    }
 
+    #[test]
+    fn test_todays_line() {
+        dbg!(todays_line());
     }
 }
