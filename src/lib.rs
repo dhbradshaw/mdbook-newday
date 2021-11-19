@@ -40,10 +40,24 @@ mod tests {
 
     #[test]
     fn test_place_line_before() {
+        let line = "- [First!](./first.md)";
+        let sigil = "- [";
+        let text_no_sigil = "[Intro](./intro)";
+        let text_with_sigil = "[Intro](./intro)\n- [Second!](./second.md)";
+
+        // If there is no sigil, the line is added to the end of the file.
         let text = place_line_before(
-            "- [First!](./first.md)",
-            "- [",
-            "[Intro](./intro)\n- [Second!](./second.md)",
+            line,
+            sigil,
+            text_no_sigil,
+        );
+        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)");
+
+        // Otherwise, the line is added before the first appearance of the sigil.
+        let text = place_line_before(
+            line,
+            sigil,
+            text_with_sigil,
         );
         assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)");
     }
