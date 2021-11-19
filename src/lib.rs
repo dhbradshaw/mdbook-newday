@@ -1,9 +1,15 @@
 use chrono::{Local, DateTime};
 
+pub fn now() -> DateTime<Local>{
+    Local::now()
+}
+
+pub fn mdbook_summary_line_for_time(t: DateTime<Local>) -> String {
+    t.format("- [%A, %b %d, %Y](./%Y/%Y-%m/%Y-%m-%d.md)").to_string()
+}
+
 pub fn todays_line() -> String {
-    let dt: DateTime<Local> = Local::now();
-    let formatted = dt.format("- [%A, %b %d, %Y](./%Y/%Y-%m/%Y-%m-%d.md)");
-    formatted.to_string()
+    mdbook_summary_line_for_time(now())
 }
 
 #[cfg(test)]
