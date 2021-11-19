@@ -16,13 +16,19 @@ pub fn todays_line() -> String {
     mdbook_summary_line_for_time(now())
 }
 
-fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
+pub fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
     let mut new_lines = vec![];
+    let mut sigil_found = false;
     for text_line in text.lines() {
         if text_line.starts_with(sigil) {
             new_lines.push(new_line);
+            sigil_found = true;
         }
         new_lines.push(text_line);
+    }
+    // Add the line at the end if there is no sigil present.
+    if !sigil_found {
+        new_lines.push(new_line);
     }
     new_lines.join("\n")
 }
