@@ -72,7 +72,17 @@ mod tests {
             &text,
         );
         assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)");
+
+        // Only add the line in one place even if the sigil appears multiple times.
+        let text = place_line_before(
+            line,
+            sigil,
+            text_with_2_sigils,
+        );
+        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [\n- [");
     }
+
+
 
     #[test]
     fn test_summary_line_format() {
