@@ -19,9 +19,12 @@ pub fn todays_line() -> String {
 pub fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
     let mut new_lines = vec![];
     let mut sigil_found = false;
+    // Add the line before the first sigil if there is one.
     for text_line in text.lines() {
-        if text_line.starts_with(sigil) {
-            new_lines.push(new_line);
+        if text_line.starts_with(sigil) && !sigil_found {
+            if text_line != new_line {
+                new_lines.push(new_line);
+            }
             sigil_found = true;
         }
         new_lines.push(text_line);
@@ -44,6 +47,7 @@ mod tests {
         let sigil = "- [";
         let text_no_sigil = "[Intro](./intro)";
         let text_with_sigil = "[Intro](./intro)\n- [Second!](./second.md)";
+        let text_with_2_sigils = "[Intro](./intro)\n- [\n- [";
 
         // If there is no sigil, the line is added to the end of the file.
         let text = place_line_before(
@@ -58,6 +62,14 @@ mod tests {
             line,
             sigil,
             text_with_sigil,
+        );
+        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)");
+
+        // Idempotent
+        let text = place_line_before(
+            line,
+            sigil,
+            &text,
         );
         assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)");
     }
