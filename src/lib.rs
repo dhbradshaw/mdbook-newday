@@ -61,18 +61,18 @@ mod tests {
     use chrono::Utc;
 
     #[test]
-    fn test_add_line_to_file() -> Result<(), std::io::Error> {
+    fn test_update_summary() -> Result<(), std::io::Error> {
         let tmp_path = "./tmp_file";
         let original_line = "original_line";
-        let added_line = "added_line";
-
+        
         // Create the file with only the original line.
         std::fs::write(tmp_path, original_line)?;
-
+        
         // Add in the new line.
-        add_line_to_file(tmp_path, SIGIL, added_line)?;
-
+        update_summary(tmp_path)?;
+        
         // Check file contents.
+        let added_line = &todays_line();
         let contents = std::fs::read_to_string(tmp_path)?;
         assert_eq!(contents, format!("{}\n{}", original_line, added_line));
 
