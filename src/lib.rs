@@ -18,6 +18,9 @@ fn todays_line() -> String {
     mdbook_summary_line_for_time(now())
 }
 
+/// Insert the new line right before the first line starting with sigil.
+/// If there is no such line, insert line after all other lines.
+/// If there is already a matching line, don't insert.
 fn insert_line_before_sigil(line: &str, sigil: &str, text: &str) -> String {
     let mut new_lines = vec![];
     let mut sigil_found = false;
@@ -49,6 +52,18 @@ fn add_line_to_file(line: &str, sigil: &str, file_path: &str) -> Result<(), std:
     std::fs::write(file_path, file_contents)
 }
 
+/// Adds a new line almost to the top of an mdbook summary page.
+/// That is, not quite the top because it skips any lines without the `- [`
+/// prefix like any title or commentary or introduction link.
+/// 
+/// The new line comes form local time and takes the format
+/// `- [%A, %b %d, %Y](./%Y/%Y-%m/%Y-%m-%d.md)`, ie
+/// `- [Thursday, Jan 01, 1970](./1970/1970-01/1970-01-01.md)`.
+/// If there is no line yet, it will add one.
+/// 
+/// `mdbook serve` will create the files mentioned in the summary with titles
+/// given by the link text.  So if this function is run right before `mdbook serve`
+/// you'll get not only the summary link but also the file.
 pub fn update_summary(path: &str) -> Result<(), std::io::Error> {
     add_line_to_file(&todays_line(), SIGIL, path)
 }
