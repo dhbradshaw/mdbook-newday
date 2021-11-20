@@ -1,5 +1,7 @@
 use chrono::{DateTime, Local, TimeZone};
 
+const SIGIL: &str = "- [";
+
 fn now() -> DateTime<Local> {
     Local::now()
 }
@@ -12,11 +14,11 @@ where
         .to_string()
 }
 
-pub fn todays_line() -> String {
+fn todays_line() -> String {
     mdbook_summary_line_for_time(now())
 }
 
-pub fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
+fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
     let mut new_lines = vec![];
     let mut sigil_found = false;
     let mut already_added = false;
@@ -41,10 +43,43 @@ pub fn place_line_before(new_line: &str, sigil: &str, text: &str) -> String {
     new_lines.join("\n")
 }
 
+fn add_line_to_file(file_path: &str, sigil: &str, line: &str) -> Result<(), std::io::Error> {
+    let file_contents = std::fs::read_to_string(file_path)?;
+    let file_contents = place_line_before(line, sigil, &file_contents);
+    std::fs::write(file_path, file_contents)?;
+    Ok(())
+}
+
+pub fn update_summary(path: &str) -> Result<(), std::io::Error> {
+    add_line_to_file(path, SIGIL, &todays_line())?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use chrono::Utc;
+
+    #[test]
+    fn test_add_line_to_file() -> Result<(), std::io::Error> {
+        let tmp_path = "./tmp_file";
+        let original_line = "original_line";
+        let added_line = "added_line";
+
+        // Create the file with only the original line.
+        std::fs::write(tmp_path, original_line)?;
+
+        // Add in the new line.
+        add_line_to_file(tmp_path, SIGIL, added_line)?;
+
+        // Check file contents.
+        let contents = std::fs::read_to_string(tmp_path)?;
+        assert_eq!(contents, format!("{}\n{}", original_line, added_line));
+
+        // Now delete the file again.
+        std::fs::remove_file(tmp_path)?;
+        Ok(())
+    }
 
     #[test]
     fn test_place_line_before() {
