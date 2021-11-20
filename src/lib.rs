@@ -152,6 +152,8 @@ mod tests {
 
     #[test]
     fn test_todays_line() {
+        // There's no fixed value here because it depends on the time and local timezone.
+        // So rather than create a test this just allows for quick inspection.
         dbg!(todays_line());
     }
 }
