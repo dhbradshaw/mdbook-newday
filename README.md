@@ -3,7 +3,7 @@
 ## Motivation
 
 With a lot of projects I like to keep a log or journal.
-Mdbook is a niceway to do that, but I find that actually
+Mdbook is a nice way to do that, but I find that actually
 entering in the day and date and creating a new file can be
 error prone and tedious.
 
