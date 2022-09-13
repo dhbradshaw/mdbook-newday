@@ -43,7 +43,9 @@ fn insert_line_before_sigil(line: &str, sigil: &str, text: &str) -> String {
     if !sigil_found && !already_added {
         new_lines.push(line);
     }
-    new_lines.join("\n")
+    let mut with_insert = new_lines.join("\n");
+    with_insert.push('\n');
+    with_insert
 }
 
 fn add_line_to_file(line: &str, sigil: &str, file_path: &str) -> Result<(), std::io::Error> {
@@ -87,7 +89,7 @@ mod tests {
         // Check file contents.
         let added_line = &todays_line();
         let contents = std::fs::read_to_string(tmp_path)?;
-        assert_eq!(contents, format!("{}\n{}", original_line, added_line));
+        assert_eq!(contents, format!("{}\n{}\n", original_line, added_line));
 
         // Now delete the file again.
         std::fs::remove_file(tmp_path)?;
@@ -105,44 +107,52 @@ mod tests {
 
         // If there is no sigil, the line is added to the end of the file.
         let text = insert_line_before_sigil(line, sigil, text_without_sigil);
-        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)");
+        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n");
 
         // Otherwise, the line is added before the first appearance of the sigil.
         let text = insert_line_before_sigil(line, sigil, text_with_sigil);
         assert_eq!(
             text,
-            "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)"
+            "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)\n"
         );
 
         // Idempotent
         let text = insert_line_before_sigil(line, sigil, &text);
         assert_eq!(
             text,
-            "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)"
+            "[Intro](./intro)\n- [First!](./first.md)\n- [Second!](./second.md)\n"
         );
 
         // Only add the line in one place even if the sigil appears multiple times.
         let text = insert_line_before_sigil(line, sigil, text_with_2_sigils);
-        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [\n- [");
+        assert_eq!(text, "[Intro](./intro)\n- [First!](./first.md)\n- [\n- [\n");
 
         // A line without a sigil is still added idempotently.
         let first_pass = insert_line_before_sigil(line_without_sigil, sigil, text_without_sigil);
-        assert_eq!(first_pass, "[Intro](./intro)\nno sigil");
+        assert_eq!(first_pass, "[Intro](./intro)\nno sigil\n");
         let second_pass = insert_line_before_sigil(line_without_sigil, sigil, &first_pass);
         assert_eq!(first_pass, second_pass)
     }
 
     #[test]
-    fn test_doesnt_remove_newline() {
+    fn test_gives_summary_terminal_newline() {
         let sigil = "- [";
-        let without_sigil = "[Introduction](introduction.md)\n";
-        let with_sigil = "- [a](a.md)\n";
-        let text = format!("{without_sigil}{with_sigil}");
-
+        let without_sigil = "[Introduction](introduction.md)";
+        let with_sigil = "- [a](a.md)";
         let line = "- [Thursday, Jan 01, 1970](./1970/1970-01/1970-01-01.md)";
-
+        
+        let expected = format!("{without_sigil}\n{line}\n{with_sigil}\n");
+        
+        // If the terminal newline is already there, we don't lose it.
+        let text = format!("{without_sigil}\n{with_sigil}\n");
         let with_insert = insert_line_before_sigil(line, sigil, &text);
-        assert_eq!(with_insert, format!("{without_sigil}{line}\n{with_sigil}"))
+        assert_eq!(with_insert, expected);
+
+        // If it was missing, we gain it.
+        let text = format!("{without_sigil}\n{with_sigil}");
+        let with_insert = insert_line_before_sigil(line, sigil, &text);
+        assert_eq!(with_insert, expected);
+
     }
 
     #[test]
@@ -160,5 +170,12 @@ mod tests {
         // There's no fixed value here because it depends on the time and local timezone.
         // So rather than create a test this just allows for quick inspection.
         dbg!(todays_line());
+    }
+    #[test]
+    fn test_lines() {
+        let lines = "a\n";
+        for line in lines.lines() {
+            println!("Here's the line: {line:?}")
+        }
     }
 }
