@@ -56,7 +56,7 @@ fn add_line_to_file(line: &str, sigil: &str, file_path: &str) -> Result<(), std:
 /// That is, not quite the top because it skips any lines without the `- [`
 /// prefix like any title or commentary or introduction link.
 /// 
-/// The new line comes form local time and takes the format
+/// The new line comes from local time and takes the format
 /// `- [%A, %b %d, %Y](./%Y/%Y-%m/%Y-%m-%d.md)`, ie
 /// `- [Thursday, Jan 01, 1970](./1970/1970-01/1970-01-01.md)`.
 /// If there is no line yet, it will add one.
@@ -130,6 +130,19 @@ mod tests {
         assert_eq!(first_pass, "[Intro](./intro)\nno sigil");
         let second_pass = insert_line_before_sigil(line_without_sigil, sigil, &first_pass);
         assert_eq!(first_pass, second_pass)
+    }
+
+    #[test]
+    fn test_doesnt_remove_newline() {
+        let sigil = "- [";
+        let without_sigil = "[Introduction](introduction.md)\n";
+        let with_sigil = "- [a](a.md)\n";
+        let text = format!("{without_sigil}{with_sigil}");
+
+        let line = "- [Thursday, Jan 01, 1970](./1970/1970-01/1970-01-01.md)";
+
+        let with_insert = insert_line_before_sigil(line, sigil, &text);
+        assert_eq!(with_insert, format!("{without_sigil}{line}\n{with_sigil}"))
     }
 
     #[test]
